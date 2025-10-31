@@ -1,0 +1,560 @@
+{
+  "name": "RAG in n8n",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Upload your data to test RAG",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Upload your file(s)",
+              "fieldType": "file",
+              "acceptFileTypes": ".pdf, .csv",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -128,
+        0
+      ],
+      "id": "f7a656ec-83fc-4ed2-a089-57a9def662b7",
+      "name": "Upload your file here",
+      "webhookId": "82848bc4-5ea2-4e5a-8bb6-3c09b94a8c5d"
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        336,
+        160
+      ],
+      "id": "94aecac0-03f9-4915-932b-d14a2576607b",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "content": "### Readme\nLoad your data into a vector database with the 📚 **Load Data** flow, and then use your data as chat context with the 🐕 **Retriever** flow.\n\n**Quick start**\n1. Click on the `Execute Workflow` button to run the 📚 **Load Data** flow.\n2. Click on `Open Chat` button to run the 🐕 **Retriever** flow. Then ask a question about content from your document(s)\n\n\nFor more info, check [our docs on RAG in n8n](https://docs.n8n.io/advanced-ai/rag-in-n8n/).",
+        "height": 300,
+        "width": 440,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -656,
+        -64
+      ],
+      "typeVersion": 1,
+      "id": "0d07742b-0b36-4c2e-990c-266cbe6e2d4d",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "### 📚 Load Data Flow",
+        "height": 460,
+        "width": 700,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        -64
+      ],
+      "typeVersion": 1,
+      "id": "d19d04f3-5231-4e47-bed7-9f24a4a8f582",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "memoryKey": {
+          "__rl": true,
+          "value": "vector_store_key",
+          "mode": "list",
+          "cachedResultName": "vector_store_key"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.2,
+      "position": [
+        64,
+        0
+      ],
+      "id": "bf50a11f-ca6a-4e04-a6d2-42fee272b260",
+      "name": "Insert Data to Store"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "knowledge_base",
+        "toolDescription": "Use this knowledge base to answer questions from the user",
+        "memoryKey": {
+          "__rl": true,
+          "mode": "list",
+          "value": "vector_store_key"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.2,
+      "position": [
+        1008,
+        240
+      ],
+      "id": "09c0db62-5413-440e-8c13-fb6bb66d9b6a",
+      "name": "Query Data Tool"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze and respond to the following IT support ticket:\n\nUser's First Name: {{ $json.body.ticket.customer.firstname }}\n\nTicket Title: {{ $json.body.ticket.title }}\n\nTicket Description: {{ $json.body.article.body }}",
+        "options": {
+          "systemMessage": "Acknowledge and Greet: Always start with a professional greeting. Use the user's first name (provided in the input).\n\nShow Empathy: Acknowledge the user's problem and the frustration it may be causing (e.g., \"I understand it's frustrating when your email isn't working...\").\n\nAnalyze and Diagnose: * Read the Ticket Title and Ticket Description carefully to understand the core issue. * Identify the most likely cause of the problem based on the details provided.\n\nProvide a Solution (If Possible): * If the issue is straightforward (e.g., password reset, software setting), provide clear, step-by-step instructions for the user to follow. * Use formatting like numbered lists or bullet points to make instructions easy to read.\n\nDo Not any include any special characters to your response. It has to be simple string output with the solution to the requested problem.\n\nTriage and Escalate (If You Can't Solve It): * If the issue is clearly outside your ability to solve (e.g., a hardware failure, a system-wide outage, a request for new equipment), do not try to invent a solution. * Instead, inform the user what the next step is. For example: \"This issue with the server requires our network team to investigate. I have escalated your ticket to them, and someone will reach out to you shortly.\"\n\nMaintain Tone: * Your tone must always be professional, patient, empathetic, and helpful. * Do not use overly technical jargon unless you explain it. * Never blame the user.\n\nIf a user raises a query in any language, respond to them in the same language as theirs. \n\nSecurity Constraint: * You must never ask the user for their password or any other sensitive credentials. If a password reset is needed, direct them to the official password reset tool or policy."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        944,
+        -16
+      ],
+      "id": "579aed76-9644-42d1-ac13-7369059ff1c2",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        640,
+        -256
+      ],
+      "id": "9c30de61-935a-471f-ae88-ec5f67beeefc",
+      "name": "When chat message received",
+      "webhookId": "4091fa09-fb9a-4039-9411-7104d213f601"
+    },
+    {
+      "parameters": {
+        "content": "### 🐕 2. Retriever Flow",
+        "height": 460,
+        "width": 696,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        608,
+        -64
+      ],
+      "typeVersion": 1,
+      "id": "28bc73a1-e64a-47bf-ac1c-ffe644894ea5",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "### Embeddings\n\nThe Insert and Retrieve operation use the same embedding node.\n\nThis is to ensure that they are using the **exact same embeddings and settings**.\n\nDifferent embeddings might not work at all, or have unintended consequences.\n",
+        "height": 240,
+        "width": 320,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        672,
+        464
+      ],
+      "typeVersion": 1,
+      "id": "0cf8c647-418c-4d1a-8952-766145afca72",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "model": "amazon.titan-embed-text-v2:0"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsAwsBedrock",
+      "typeVersion": 1,
+      "position": [
+        512,
+        528
+      ],
+      "id": "73bfaf02-e20c-402c-92f7-141f01181b30",
+      "name": "Embeddings AWS Bedrock",
+      "credentials": {
+        "aws": {
+          "id": "orPHI0LPsKBwSmj2",
+          "name": "AWS account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        784,
+        224
+      ],
+      "id": "463343fc-40a8-4200-8e27-9145f21df2c6",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "OmidINJOAgpui6B5",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "9ebb0ea9-3150-4576-9292-7c2a25bae543",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        672,
+        -16
+      ],
+      "id": "766eaed5-c06d-431b-abfa-abd4fa91c2b9",
+      "name": "Webhook",
+      "webhookId": "9ebb0ea9-3150-4576-9292-7c2a25bae543"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=http://65.0.68.85:8080/api/v1/tickets/{{ $('Webhook').item.json.body.ticket.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Token token=_1Xn3JsoXg7gv8xFYvHNMxhtDL7U1Ps-K13cfi6rB-hJOrJojQzXgC3oiaL8fMId"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "=article.subject",
+              "value": "AI Assistant Response"
+            },
+            {
+              "name": "=article.body",
+              "value": "={{ $items('AI Agent')[0].json.output }}"
+            },
+            {
+              "name": "article.internal",
+              "value": "={{ false }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1408,
+        -16
+      ],
+      "id": "138c6b93-dd5d-4e77-83d8-555a6464071a",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Function node to clean AI response for JSON-safe HTTP body\n// Assumes the incoming data structure is similar to:\n// [{ \"output\": \"Hi ... \\n\\n ...\" }]\n\nreturn items.map(item => {\n  let raw = $input.first().json.output || '';\n\n  // Clean the text:\n  // - Remove potential control chars\n  // - Trim extra spaces\n  // - Escape double quotes and backslashes\n  // - Convert line breaks to plain \\n for JSON safety\n  const cleaned = raw\n    .replace(/\\\\/g, '\\\\\\\\')   // escape backslashes\n    .replace(/\"/g, '\\\\\"')     // escape double quotes\n    .replace(/\\r?\\n/g, '\\\\n') // normalize newlines\n    .trim();\n\n  // Return in JSON structure that HTTP node can use\n  return {\n    json: {\n      article: {\n        subject: \"AI Assistant Response\",\n        body: cleaned,\n        internal: false\n      }\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1376,
+        320
+      ],
+      "id": "09fe3b1d-b2fd-438f-b710-2088ccf53acb",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {
+    "Insert Data to Store": [
+      {
+        "json": {
+          "metadata": {
+            "source": "blob",
+            "blobType": "application/pdf",
+            "pdf": {
+              "version": "1.10.100",
+              "info": {
+                "PDFFormatVersion": "1.7",
+                "IsAcroFormPresent": false,
+                "IsXFAPresent": false,
+                "Author": "MOHAMMED DANISH. M .",
+                "Creator": "Microsoft® Word for Microsoft 365",
+                "Producer": "Microsoft® Word for Microsoft 365",
+                "CreationDate": "D:20241119102423+05'30'",
+                "ModDate": "D:20241119102423+05'30'"
+              },
+              "metadata": {
+                "_metadata": {
+                  "pdf:producer": "Microsoft® Word for Microsoft 365",
+                  "dc:creator": "MOHAMMED DANISH. M .",
+                  "xmp:creatortool": "Microsoft® Word for Microsoft 365",
+                  "xmp:createdate": "2024-11-19T10:24:23+05:30",
+                  "xmp:modifydate": "2024-11-19T10:24:23+05:30",
+                  "xmpmm:documentid": "uuid:C16B0EDA-A2FF-43B5-B902-5E21A2980F46",
+                  "xmpmm:instanceid": "uuid:C16B0EDA-A2FF-43B5-B902-5E21A2980F46"
+                }
+              },
+              "totalPages": 1
+            },
+            "loc": {
+              "lines": {
+                "from": 1,
+                "to": 24
+              }
+            }
+          },
+          "pageContent": "KB001: How to Fix \"Outlook Not Responding\" Issue \nSymptoms \n• Outlook freezes or becomes unresponsive. \n• The application shows \"Not Responding\" in the title bar. \nResolution \n1. Restart Outlook: \no Close Outlook completely using Task Manager (Ctrl + Shift + Esc → End Task). \no Reopen Outlook. \n2. Disable Add-ins: \no Open Outlook in Safe Mode: \nPress Windows + R → Type outlook.exe /safe → Enter. \no Go to File → Options → Add-ins. \no Click Go next to \"Manage COM Add-ins\" and disable unnecessary add-ins. \n3. Repair the Outlook Data File: \no Close Outlook. \no Open the Scanpst.exe tool (found in your Office installation directory). \no Browse and select your .pst file, then click \"Start\" to repair. \n4. Update Outlook: \no Open Outlook. \no Go to File → Office Account → Update Options → Update Now. \n5. Create a New Outlook Profile: \no Open the Control Panel → Mail (Microsoft Outlook) → Show Profiles. \no Click \"Add\" and set it as the default profile. \n6. Reinstall Outlook:"
+        }
+      },
+      {
+        "json": {
+          "metadata": {
+            "source": "blob",
+            "blobType": "application/pdf",
+            "pdf": {
+              "version": "1.10.100",
+              "info": {
+                "PDFFormatVersion": "1.7",
+                "IsAcroFormPresent": false,
+                "IsXFAPresent": false,
+                "Author": "MOHAMMED DANISH. M .",
+                "Creator": "Microsoft® Word for Microsoft 365",
+                "Producer": "Microsoft® Word for Microsoft 365",
+                "CreationDate": "D:20241119102423+05'30'",
+                "ModDate": "D:20241119102423+05'30'"
+              },
+              "metadata": {
+                "_metadata": {
+                  "pdf:producer": "Microsoft® Word for Microsoft 365",
+                  "dc:creator": "MOHAMMED DANISH. M .",
+                  "xmp:creatortool": "Microsoft® Word for Microsoft 365",
+                  "xmp:createdate": "2024-11-19T10:24:23+05:30",
+                  "xmp:modifydate": "2024-11-19T10:24:23+05:30",
+                  "xmpmm:documentid": "uuid:C16B0EDA-A2FF-43B5-B902-5E21A2980F46",
+                  "xmpmm:instanceid": "uuid:C16B0EDA-A2FF-43B5-B902-5E21A2980F46"
+                }
+              },
+              "totalPages": 1
+            },
+            "loc": {
+              "lines": {
+                "from": 21,
+                "to": 25
+              }
+            }
+          },
+          "pageContent": "5. Create a New Outlook Profile: \no Open the Control Panel → Mail (Microsoft Outlook) → Show Profiles. \no Click \"Add\" and set it as the default profile. \n6. Reinstall Outlook: \no If all else fails, uninstall and reinstall Outlook."
+        }
+      },
+      {
+        "json": {
+          "metadata": {
+            "source": "blob",
+            "blobType": "application/pdf",
+            "pdf": {
+              "version": "1.10.100",
+              "info": {
+                "PDFFormatVersion": "1.7",
+                "IsAcroFormPresent": false,
+                "IsXFAPresent": false,
+                "Author": "MOHAMMED DANISH. M .",
+                "Creator": "Microsoft® Word for Microsoft 365",
+                "Producer": "Microsoft® Word for Microsoft 365",
+                "CreationDate": "D:20241119102543+05'30'",
+                "ModDate": "D:20241119102543+05'30'"
+              },
+              "metadata": {
+                "_metadata": {
+                  "pdf:producer": "Microsoft® Word for Microsoft 365",
+                  "dc:creator": "MOHAMMED DANISH. M .",
+                  "xmp:creatortool": "Microsoft® Word for Microsoft 365",
+                  "xmp:createdate": "2024-11-19T10:25:43+05:30",
+                  "xmp:modifydate": "2024-11-19T10:25:43+05:30",
+                  "xmpmm:documentid": "uuid:2E162028-A746-4117-894D-AD2CB9B96245",
+                  "xmpmm:instanceid": "uuid:2E162028-A746-4117-894D-AD2CB9B96245"
+                }
+              },
+              "totalPages": 1
+            },
+            "loc": {
+              "lines": {
+                "from": 1,
+                "to": 23
+              }
+            }
+          },
+          "pageContent": "KB002: Resolving \"Cannot Send Emails in Outlook\" \nSymptoms \n• Unable to send emails. \n• Emails get stuck in the Outbox. \n• Error messages like \"Cannot connect to the server\" or \"Authentication failed.\" \nResolution \n1. Check Internet Connection: \no Ensure your device has an active and stable internet connection. \n2. Verify Email Settings: \no Go to File → Account Settings → Account Settings → Select your account → \nChange. \no Verify SMTP server settings (e.g., smtp.outlook.com, port 587 for TLS). \n3. Check Authentication Settings: \no Ensure \"My outgoing server (SMTP) requires authentication\" is enabled \nunder More Settings. \n4. Clear Outbox: \no Move any unsent emails from the Outbox to the Drafts folder. \no Retry sending them one by one. \n5. Disable Third-Party Security Software: \no Temporarily disable any antivirus or firewall software that might block \noutgoing mail. \n6. Run Outlook Troubleshooter: \no Open Control Panel → Troubleshooting → Search for \"Outlook\" and run the"
+        }
+      },
+      {
+        "json": {
+          "metadata": {
+            "source": "blob",
+            "blobType": "application/pdf",
+            "pdf": {
+              "version": "1.10.100",
+              "info": {
+                "PDFFormatVersion": "1.7",
+                "IsAcroFormPresent": false,
+                "IsXFAPresent": false,
+                "Author": "MOHAMMED DANISH. M .",
+                "Creator": "Microsoft® Word for Microsoft 365",
+                "Producer": "Microsoft® Word for Microsoft 365",
+                "CreationDate": "D:20241119102543+05'30'",
+                "ModDate": "D:20241119102543+05'30'"
+              },
+              "metadata": {
+                "_metadata": {
+                  "pdf:producer": "Microsoft® Word for Microsoft 365",
+                  "dc:creator": "MOHAMMED DANISH. M .",
+                  "xmp:creatortool": "Microsoft® Word for Microsoft 365",
+                  "xmp:createdate": "2024-11-19T10:25:43+05:30",
+                  "xmp:modifydate": "2024-11-19T10:25:43+05:30",
+                  "xmpmm:documentid": "uuid:2E162028-A746-4117-894D-AD2CB9B96245",
+                  "xmpmm:instanceid": "uuid:2E162028-A746-4117-894D-AD2CB9B96245"
+                }
+              },
+              "totalPages": 1
+            },
+            "loc": {
+              "lines": {
+                "from": 20,
+                "to": 27
+              }
+            }
+          },
+          "pageContent": "o Temporarily disable any antivirus or firewall software that might block \noutgoing mail. \n6. Run Outlook Troubleshooter: \no Open Control Panel → Troubleshooting → Search for \"Outlook\" and run the \ntroubleshooter. \n7. Contact Your Email Provider: \no If the issue persists, verify account status and settings with your email \nprovider."
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Upload your file here": {
+      "main": [
+        [
+          {
+            "node": "Insert Data to Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Insert Data to Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Data Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        []
+      ]
+    },
+    "Embeddings AWS Bedrock": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Insert Data to Store",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Query Data Tool",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e7e04fae-760b-4c85-b370-5df2d1af8edc",
+  "meta": {
+    "templateId": "rag-starter-template",
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fda20f41482ce008fe59e7254f82599085fbe4abaabf80f4b12c07bf0904e3d8"
+  },
+  "id": "aZ3vnLQ2EwyacSal",
+  "tags": []
+}
